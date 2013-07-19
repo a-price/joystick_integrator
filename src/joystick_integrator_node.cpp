@@ -169,8 +169,8 @@ int main(int argc, char** argv)
 
 	nh.param("/use_dominant_axis", useDominantAxis, true);
 	nh.param("/use_local_coordinates", useLocalCoordinates, false);
-	nh.param("/position_speed", positionSpeed, 0.5);
-	nh.param("/rotation_speed", rotationSpeed, 0.5);
+	nh.param("/position_speed", positionSpeed, 0.25);
+	nh.param("/rotation_speed", rotationSpeed, 0.25);
 
 	curOrientation = Eigen::Quaternionf(Eigen::Matrix3f::Identity());
 
