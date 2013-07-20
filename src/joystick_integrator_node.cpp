@@ -153,7 +153,7 @@ void spacenavCallback(const sensor_msgs::JoyPtr joy)
 	curPose.pose.orientation.y = curOrientation.y();
 	curPose.pose.orientation.z = curOrientation.z();
 
-	curPose.header.frame_id = "/Body_Hip";
+	curPose.header.frame_id = "/Body_TSY";
 	curPose.header.stamp = ros::Time::now();
 
 	posePub.publish(curPose);
