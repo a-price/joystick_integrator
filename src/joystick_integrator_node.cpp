@@ -44,119 +44,17 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include "joystick_integrator/JoystickIntegrator.h"
+
 ros::Subscriber joySub;
 ros::Publisher posePub;
-sensor_msgs::Joy prevJoy;
-geometry_msgs::PoseStamped curPose;
-Eigen::Quaternionf curOrientation;
+JoystickIntegrator joyInt("/Body_TSY");
 
-bool useDominantAxis = true;
-bool useLocalCoordinates = false;
-double positionSpeed = 0.5;
-double rotationSpeed = 0.5;
-
-const int X_AXIS = 0;
-const int Y_AXIS = 1;
-const int Z_AXIS = 2;
-const int RX_AXIS = 3;
-const int RY_AXIS = 4;
-const int RZ_AXIS = 5;
-
-Eigen::Quaternionf rpyToQ (float rx, float ry, float rz)
-{
-	Eigen::Quaternion<float> q;
-
-	Eigen::AngleAxis<float> aaZ(rz, Eigen::Vector3f::UnitZ());
-	Eigen::AngleAxis<float> aaY(ry, Eigen::Vector3f::UnitY());
-	Eigen::AngleAxis<float> aaX(rx, Eigen::Vector3f::UnitX());
-
-	q = aaZ * aaY * aaX;
-
-	return q;
-}
-
-// [x,y,z,r,p,y]
 void spacenavCallback(const sensor_msgs::JoyPtr joy)
 {
-	double dt = 0.0;
-	ros::Duration deltaT = (joy->header.stamp - prevJoy.header.stamp);
+	joyInt.spacenavUpdate(joy);
 
-	// Check that the last message is still relatively recent, else clamp to 1 second interval
-	if (deltaT > ros::Duration(1))
-	{
-		dt = 1.0;
-	}
-	else
-	{
-		dt = deltaT.toSec();
-	}
-
-	// Limit movement to the primary commanded direction.
-	// This helps limit drift in unintended directions.
-	if (useDominantAxis)
-	{
-		int dominantAxis = 0;
-		float max = 0;
-		for (int i = 0; i < 6; i++)
-		{
-			if (fabs(joy->axes[i]) > max)
-			{
-				max = fabs(joy->axes[i]);
-				dominantAxis = i;
-			}
-		}
-
-		for (int i = 0; i < 6; i++)
-		{
-			if (i != dominantAxis)
-			{
-				joy->axes[i] = 0.0;
-			}
-		}
-	}
-
-
-
-	Eigen::Quaternionf q = rpyToQ(joy->axes[RX_AXIS] * dt * rotationSpeed,
-								  joy->axes[RY_AXIS] * dt * rotationSpeed,
-								  joy->axes[RZ_AXIS] * dt * rotationSpeed);
-
-	if (useLocalCoordinates)
-	{
-		// Perform translation in direction of current axes
-		Eigen::Vector3f dp(joy->axes[X_AXIS] * dt * positionSpeed,
-						   joy->axes[Y_AXIS] * dt * positionSpeed,
-						   joy->axes[Z_AXIS] * dt * positionSpeed);
-
-		dp = curOrientation * dp;
-
-		curPose.pose.position.x += dp.x();
-		curPose.pose.position.y += dp.y();
-		curPose.pose.position.z += dp.z();
-
-		// Perform rotation in terms of current axes
-		curOrientation = curOrientation * q;
-	}
-	else
-	{
-		// Perform translation in terms of global axes
-		curPose.pose.position.x += joy->axes[X_AXIS] * dt * positionSpeed;
-		curPose.pose.position.y += joy->axes[Y_AXIS] * dt * positionSpeed;
-		curPose.pose.position.z += joy->axes[Z_AXIS] * dt * positionSpeed;
-
-		// Perform rotation in terms of global axes
-		curOrientation = q * curOrientation;
-	}
-
-	curPose.pose.orientation.w = curOrientation.w();
-	curPose.pose.orientation.x = curOrientation.x();
-	curPose.pose.orientation.y = curOrientation.y();
-	curPose.pose.orientation.z = curOrientation.z();
-
-	curPose.header.frame_id = "/Body_TSY";
-	curPose.header.stamp = ros::Time::now();
-
-	posePub.publish(curPose);
+	posePub.publish(joyInt.currentPose);
 }
 
 
@@ -167,12 +65,11 @@ int main(int argc, char** argv)
 
 	ros::NodeHandle nh;
 
-	nh.param("/use_dominant_axis", useDominantAxis, true);
-	nh.param("/use_local_coordinates", useLocalCoordinates, false);
-	nh.param("/position_speed", positionSpeed, 0.25);
-	nh.param("/rotation_speed", rotationSpeed, 0.25);
-
-	curOrientation = Eigen::Quaternionf(Eigen::Matrix3f::Identity());
+	nh.param("/use_dominant_axis", joyInt.settings.useDominantAxis, true);
+	nh.param("/use_local_rotations", joyInt.settings.useLocalRotations, true);
+	nh.param("/use_local_translations", joyInt.settings.useLocalTranslations, false);
+	nh.param("/position_speed", joyInt.settings.positionSpeed, 0.1);
+	nh.param("/rotation_speed", joyInt.settings.rotationSpeed, 0.25);
 
 	posePub = nh.advertise<geometry_msgs::PoseStamped>("/pose_out", 1);
 	joySub = nh.subscribe("/joy_in", 1, spacenavCallback);
