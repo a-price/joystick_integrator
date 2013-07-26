@@ -60,9 +60,20 @@ JoystickIntegratorParameters JoystickIntegratorParameters::defaults()
 	p.useLocalRotations = true;
 	p.useLocalTranslations = false;
 	p.positionSpeed = 0.1;
-	p.positionSpeed = 0.2;
+	p.rotationSpeed = 0.2;
 
 	return p;
+}
+
+std::ostream& operator<<(std::ostream& stream, const JoystickIntegratorParameters& p)
+{
+	stream << "Dominant Axis: " << p.useDominantAxis << std::endl;
+	stream << "Local Rotations: " << p.useLocalRotations << std::endl;
+	stream << "Local Translations: " << p.useLocalTranslations << std::endl;
+	stream << "Rotation Speed: " << p.rotationSpeed << std::endl;
+	stream << "Translation Speed: " << p.positionSpeed << std::endl;
+
+	return stream;
 }
 
 JoystickIntegrator::JoystickIntegrator(std::string baseFrame)

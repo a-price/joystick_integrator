@@ -68,6 +68,8 @@ public:
 	static JoystickIntegratorParameters defaults();
 };
 
+static std::ostream& operator<<(std::ostream& stream, const JoystickIntegratorParameters& p);
+
 class JoystickIntegrator
 {
 public:
