@@ -3,7 +3,7 @@
  * \brief
  *
  * \author Andrew Price
- * \date 7 23, 2013
+ * \date July 23, 2013
  *
  * \copyright
  *
@@ -77,6 +77,8 @@ public:
 	~JoystickIntegrator() {}
 
 	void spacenavUpdate(const sensor_msgs::JoyPtr joy);
+
+    void setPose(const geometry_msgs::PoseStamped& newPose);
 
 	JoystickIntegratorParameters settings;
 	sensor_msgs::Joy prevJoy;

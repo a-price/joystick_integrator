@@ -3,7 +3,7 @@
  * \brief
  *
  * \author Andrew Price
- * \date 7 23, 2013
+ * \date July 23, 2013
  *
  * \copyright
  *
@@ -178,4 +178,13 @@ void JoystickIntegrator::spacenavUpdate(const sensor_msgs::JoyPtr joy)
 	currentPose.header.stamp = ros::Time::now();
 
 	return;
+}
+
+void JoystickIntegrator::setPose(const geometry_msgs::PoseStamped& newPose)
+{
+    currentPose = newPose;
+    currentOrientation.w() = newPose.pose.orientation.w;
+    currentOrientation.x() = newPose.pose.orientation.x;
+    currentOrientation.y() = newPose.pose.orientation.y;
+    currentOrientation.z() = newPose.pose.orientation.z;
 }
