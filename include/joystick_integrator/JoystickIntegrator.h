@@ -78,7 +78,7 @@ public:
 
 	void spacenavUpdate(const sensor_msgs::JoyPtr joy);
 
-    void setPose(const geometry_msgs::PoseStamped& newPose);
+	void setPose(const geometry_msgs::PoseStamped& newPose);
 
 	JoystickIntegratorParameters settings;
 	sensor_msgs::Joy prevJoy;

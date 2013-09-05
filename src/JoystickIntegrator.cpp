@@ -182,9 +182,9 @@ void JoystickIntegrator::spacenavUpdate(const sensor_msgs::JoyPtr joy)
 
 void JoystickIntegrator::setPose(const geometry_msgs::PoseStamped& newPose)
 {
-    currentPose = newPose;
-    currentOrientation.w() = newPose.pose.orientation.w;
-    currentOrientation.x() = newPose.pose.orientation.x;
-    currentOrientation.y() = newPose.pose.orientation.y;
-    currentOrientation.z() = newPose.pose.orientation.z;
+	currentPose = newPose;
+	currentOrientation.w() = newPose.pose.orientation.w;
+	currentOrientation.x() = newPose.pose.orientation.x;
+	currentOrientation.y() = newPose.pose.orientation.y;
+	currentOrientation.z() = newPose.pose.orientation.z;
 }
