@@ -187,4 +187,7 @@ void JoystickIntegrator::setPose(const geometry_msgs::PoseStamped& newPose)
 	currentOrientation.x() = newPose.pose.orientation.x;
 	currentOrientation.y() = newPose.pose.orientation.y;
 	currentOrientation.z() = newPose.pose.orientation.z;
+
+	currentPose.header.frame_id = frame_id;
+	currentPose.header.stamp = ros::Time::now();
 }
