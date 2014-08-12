@@ -2,9 +2,15 @@ cmake_minimum_required(VERSION 2.8.3)
 project(joystick_integrator)
 
 ## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs sensor_msgs std_msgs)
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  geometry_msgs
+  sensor_msgs
+  std_msgs
+)
+if ($ENV{ROS_DISTRO} STREQUAL "indigo")
+  find_package(cmake_modules REQUIRED)
+endif ($ENV{ROS_DISTRO} STREQUAL "indigo")
 
 find_package(Eigen REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
