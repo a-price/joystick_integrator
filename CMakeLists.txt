@@ -8,13 +8,10 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
 )
-if ($ENV{ROS_DISTRO} STREQUAL "indigo")
-  find_package(cmake_modules REQUIRED)
-endif ($ENV{ROS_DISTRO} STREQUAL "indigo")
 
-find_package(Eigen REQUIRED)
-include_directories(${EIGEN_INCLUDE_DIRS})
-add_definitions(${EIGEN_DEFINITIONS})
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIRS})
+add_definitions(${EIGEN3_DEFINITIONS})
 
 #######################################
 ## Declare ROS messages and services ##
