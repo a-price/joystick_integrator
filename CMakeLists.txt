@@ -7,11 +7,22 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   std_msgs
+  tf
 )
 
-find_package(Eigen3 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIRS})
+find_package(Eigen3)
+if(NOT EIGEN3_FOUND)
+  # Fallback to cmake_modules
+  find_package(cmake_modules REQUIRED)
+  find_package(Eigen REQUIRED)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
+  set(EIGEN3_DEFINITIONS ${EIGEN_DEFINITIONS})
+else()
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS})
 add_definitions(${EIGEN3_DEFINITIONS})
+
 
 #######################################
 ## Declare ROS messages and services ##
@@ -28,7 +39,7 @@ add_definitions(${EIGEN3_DEFINITIONS})
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp geometry_msgs sensor_msgs std_msgs
+  CATKIN_DEPENDS roscpp geometry_msgs sensor_msgs std_msgs tf
 #  DEPENDS system_lib
 )
 
@@ -38,7 +49,8 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include ${catkin_INCLUDE_DIRS} )
+include_directories(include)
+include_directories(SYSTEM ${catkin_INCLUDE_DIRS})
 
 ## Declare a cpp library
 add_library(${PROJECT_NAME} src/JoystickIntegrator.cpp)

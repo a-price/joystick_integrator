@@ -38,23 +38,34 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "joystick_integrator/JoystickIntegrator.h"
+
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_datatypes.h>
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include "joystick_integrator/JoystickIntegrator.h"
-
 ros::Subscriber joySub;
 ros::Publisher posePub;
-JoystickIntegrator joyInt("/Body_TSY");
+JoystickIntegrator* joyInt;
+tf::TransformBroadcaster* tb;
+bool useTF = false;
 
 void spacenavCallback(const sensor_msgs::JoyPtr joy)
 {
-	joyInt.spacenavUpdate(joy);
+	joyInt->spacenavUpdate(joy);
 
-	posePub.publish(joyInt.currentPose);
+	posePub.publish(joyInt->currentPose);
+	if (useTF)
+	{
+		tf::Transform t;
+		tf::poseMsgToTF(joyInt->currentPose.pose, t);
+		tb->sendTransform(tf::StampedTransform(t, ros::Time::now(), joyInt->frame_id, "spacenav"));
+	}
 }
 
 
@@ -63,19 +74,37 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "joystick_integrator");
 	ROS_INFO("Started joystick_integrator.");
 
-	ros::NodeHandle nh;
+	ros::NodeHandle nh, pnh("~");
 
-	nh.param("/use_dominant_axis", joyInt.settings.useDominantAxis, true);
-	nh.param("/use_local_rotations", joyInt.settings.useLocalRotations, true);
-	nh.param("/use_local_translations", joyInt.settings.useLocalTranslations, false);
-	nh.param("/position_speed", joyInt.settings.positionSpeed, 0.1);
-	nh.param("/rotation_speed", joyInt.settings.rotationSpeed, 0.25);
+	std::string worldFrame;
+	pnh.param<std::string>("world_frame", worldFrame, "world");
 
-	posePub = nh.advertise<geometry_msgs::PoseStamped>("/pose_out", 1);
-	joySub = nh.subscribe("/joy_in", 1, spacenavCallback);
+	joyInt = new JoystickIntegrator(worldFrame);
+
+	pnh.param("use_dominant_axis", joyInt->settings.useDominantAxis, true);
+	pnh.param("use_local_rotations", joyInt->settings.useLocalRotations, true);
+	pnh.param("use_local_translations", joyInt->settings.useLocalTranslations, false);
+	pnh.param("position_speed", joyInt->settings.positionSpeed, 0.1);
+	pnh.param("rotation_speed", joyInt->settings.rotationSpeed, 0.25);
+	pnh.param("use_tf", useTF, true);
+	if (useTF)
+	{
+		tb = new tf::TransformBroadcaster();
+	}
+
+	posePub = nh.advertise<geometry_msgs::PoseStamped>("pose_out", 1);
+	joySub = nh.subscribe("joy_in", 1, spacenavCallback);
 
 
 	ros::spin();
+
+	// Make sure no callbacks are fired after pointer is deleted
+	joySub.shutdown();
+	delete joyInt;
+	if (useTF)
+	{
+		delete tb;
+	}
 
 	return 0;
 }
