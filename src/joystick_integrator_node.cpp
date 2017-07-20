@@ -83,9 +83,9 @@ int main(int argc, char** argv)
 
 	pnh.param("use_dominant_axis", joyInt->settings.useDominantAxis, true);
 	pnh.param("use_local_rotations", joyInt->settings.useLocalRotations, true);
-	pnh.param("use_local_translations", joyInt->settings.useLocalTranslations, false);
-	pnh.param("position_speed", joyInt->settings.positionSpeed, 0.1);
-	pnh.param("rotation_speed", joyInt->settings.rotationSpeed, 0.25);
+	pnh.param("use_local_translations", joyInt->settings.useLocalTranslations, true);
+	pnh.param("position_speed", joyInt->settings.positionSpeed, 0.01);
+	pnh.param("rotation_speed", joyInt->settings.rotationSpeed, 0.025);
 	pnh.param("use_tf", useTF, true);
 	if (useTF)
 	{
